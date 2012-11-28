@@ -13,19 +13,70 @@ from nipy.labs.spatial_models.discrete_domain import \
 from nipy.algorithms.graph import wgraph_from_coo_matrix
 
 try:
-    from parietal.glm_files_layout import cortical_glm
-except:
-    from parietal_copy import cortical_glm
-try:
     from parietal.surface_operations import mesh_processing as mep
 except:
-    from parietal_copy import mesh_processing as  mep
+    import mesh_processing as  mep
 
 NEGINF = -np.inf
 
 ##################################################################
 # Ancillary functions
 ##################################################################
+
+def load_texture(path):
+    """Return an array from texture data stored in a gifti file
+
+    Parameters
+    ----------
+    path string or list of strings
+         path of the texture files
+
+    Returns
+    -------
+    data array of shape (nnode) or (nnode, len(path)) 
+         the corresponding data
+    """
+    from nibabel.gifti import read
+
+    # use alternative libraries than nibabel if necessary
+    if hasattr(path, '__iter__'):
+        tex_data = []
+        for f in path:
+            ftex = read(f).getArraysFromIntent('NIFTI_INTENT_TIME_SERIES')
+            tex = np.array([f.data for f in ftex])
+            tex_data.append(tex)
+        tex_data = np.array(tex_data)
+        if len(tex_data.shape) > 2:
+            tex_data = np.squeeze(tex_data)
+    else:
+        tex_ = read(path)
+        tex_data = np.array([darray.data for darray in tex_.darrays])
+    return tex_data
+
+
+def save_texture(path, data, intent='none', verbose=False):
+    """
+    volume saving utility for textures
+    
+    Parameters
+    ----------
+    path, string, output image path
+    data, array of shape (nnode)
+          data to be put in the volume
+    intent: string, optional
+            intent
+
+    Fixme
+    -----
+    Missing checks
+    Handle the case where data is multi-dimensional ? 
+    """
+    from nibabel.gifti import write, GiftiDataArray, GiftiImage
+    if verbose:
+        print 'Warning: assuming a float32 gifti file'
+    darray = GiftiDataArray().from_array(data.astype(np.float32), intent)
+    img = GiftiImage(darrays=[darray])
+    write(img, path)
 
 
 def cc_mask(graph, mask, size_threshold):
@@ -154,7 +205,7 @@ def phase_unwrapping(phase, mesh, mask, path=None):
         if path is not None: 
             ex = - 1 * np.ones(np.size(mask))
             ex[mask.squeeze()] = u
-            cortical_glm.save_texture(path, ex, 'estimate')
+            save_texture(path, ex, 'estimate')
         if change == False:
             break
     phase[phase < - np.pi] = - np.pi + 1.e-6
@@ -184,14 +235,6 @@ def visual_field_scalar(mesh, ring, wedge, mask=None):
     vfs = np.array([np.linalg.det(np.vstack((g, r, w))) for (g, r, w) in zip (
                 normals, ring_grad, wedge_grad)])
     return vfs
-
-
-def _smooth_texture(texture, mesh, output, sigma, mask, use_freesurfer=True):
-    """ Smooth a texture """
-    if use_freesurfer:
-        pass
-    else:
-        mep.smooth_texture(mesh, wedge, output_texture, sigma, mask)
 
 
 def visual_areas_delineation(mesh, ring, wedge, lat=None, lon=None, side=None, 
@@ -239,14 +282,14 @@ def visual_areas_delineation(mesh, ring, wedge, lat=None, lon=None, side=None,
     vfd = visual_field_scalar(mesh, ring, wedge, mask)
 
     # write fs as a texture
-    n_nodes = cortical_glm.load_texture(ring).size
+    n_nodes = load_texture(ring).size
     if mask == None:
         mask = np.ones(n_nodes).astype(np.bool)
     else: 
-        mask = cortical_glm.load_texture(mask).astype(np.bool)
+        mask = load_texture(mask).astype(np.bool)
     wvfd = 0 * np.ones(n_nodes)
     wvfd[mask] = vfd
-    cortical_glm.save_texture(vfs, wvfd)
+    save_texture(vfs, wvfd)
     # get the connected components
     # get their latitude, longitude
     # identify them
@@ -390,7 +433,7 @@ def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
 
 
 def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
-                 offset_wedge=0, offset_ring=0, smooth=0, use_nibabel=True, 
+                 offset_wedge=0, offset_ring=0, smooth=0, 
                  do_wedge=True, do_ring=True, do_phase_unwrapping=False):
     """
     Parameters
@@ -436,7 +479,7 @@ def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
         const_map = op.join(paths["contrasts"],
                                  '%s_constant_con.gii' % side)
         if op.exists(const_map):
-            const = cortical_glm.load_texture(const_map)
+            const = load_texture(const_map)
         else:
             const = 0
         mesh = paths['%s_mesh' % side]
@@ -449,17 +492,16 @@ def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
             stat_map = mep.smooth_texture(
                 mesh, stat_map, smooth_stat_map, smooth)
         else:
-            stat_map = cortical_glm.load_texture(stat_map, use_nibabel)
+            stat_map = load_texture(stat_map)
         mask = (np.ravel(stat_map) > threshold) * (np.isnan(const) == 0)
-        mask = cc_mesh_mask(mesh, mask, size_threshold)
+        mask = cc_mesh_mask(mesh, mask, size_threshold).ravel()
 
         data = {}
         for r in all_reg:
             contrast_file = op.join(
                 paths["contrasts"], '%s_%s_con.gii' % (side, r))
             if smooth == 0:
-                data[r] = cortical_glm.load_texture(
-                    contrast_file, use_nibabel).ravel()[mask.ravel()]
+                data[r] = load_texture(contrast_file).ravel()[mask.ravel()]
             else:
                 data[r] = mep.smooth_texture(
                     mesh, contrast_file, None, smooth)[mask.ravel()]
@@ -497,9 +539,9 @@ def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
         for (x, name) in zip(data_, id_):
             ex = 0 * np.ones(np.size(mask)).astype(np.float32)
             ex[mask.squeeze()] = x
-            cortical_glm.save_texture(
+            save_texture(
                 op.join(paths["contrasts"], side + '_' + name + '.gii'),
-                ex, 'estimate', use_nibabel)
+                ex, 'estimate')
 
 
 def delineate_areas(phase_ring, phase_wedge, hemo, mesh, mask, planar_coord, 
@@ -533,7 +575,7 @@ def delineate_areas(phase_ring, phase_wedge, hemo, mesh, mask, planar_coord,
         for (x, name) in zip(data_, id_):
             ex = 0 * np.ones(np.size(mask)).astype(np.float32)
             ex[mask.squeeze()] = x
-            cortical_glm.save_texture(
+            save_texture(
                 op.join(write_dir, side + '_' + name + '.gii'), ex, 'estimate')
 
     return visual_areas

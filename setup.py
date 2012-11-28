@@ -5,7 +5,6 @@
 descr = """retinotopic mapping: Tools for analyzing retinotopy datasets."""
 
 import os
-import glob
 
 DISTNAME = 'retinotopic_mapping'
 DESCRIPTION = descr
@@ -29,6 +28,5 @@ if __name__ == "__main__":
         license=LICENSE,
         version=VERSION,
         download_url=DOWNLOAD_URL,
-        packages=['retino'],
-        scripts=glob.glob('scripts/*/*.py') 
-    )
+        packages=['retino']    
+)
