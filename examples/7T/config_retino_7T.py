@@ -161,11 +161,11 @@ def init_config():
             'subject_id': 'td110140',
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
-                'ring_neg': '000007_MoCoSeries',
-                'ring_pos': '000011_MoCoSeries',
-                'wedge_pos': '000013_MoCoSeries',
-                'wedge_neg': '000015_MoCoSeries'},
-            # CAVEAT: there is also the series 17  -> need to check
+                'ring_neg': '000011_MoCoSeries',
+                'ring_pos': '000013_MoCoSeries',
+                'wedge_pos': '000015_MoCoSeries',
+                'wedge_neg': '000017_MoCoSeries'},
+            # CAVEAT: there is also the series 007, not sure of what happened
             'date': '20111012',
             'protocol': 'ring + wedge',
             'scanner': '7T'},

@@ -19,36 +19,32 @@ import glob
 import pylab
 import scipy.stats as st
 
-from nipy.labs import compute_mask_files
 from nibabel import load, save, Nifti1Image
-try:
-    from parietal.glm_files_layout.cortical_glm import (load_texture,
-                                                        save_texture)
-except:
-    from parietal_copy.cortical_glm import load_texture, save_texture
-from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
-from retino import angular_analysis
-from config_retino_7T import make_paths
-from nipy.modalities.fmri.design_matrix import make_dmtx
 from nibabel.gifti import read
+from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.labs import compute_mask_files
+from retino.angular_analysis import load_texture, save_texture, angular_maps
+import config_retino_7T
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
 #-----------------------------------------------------------
-
-paths = make_paths()
-subjects = paths.keys()
+data_path, subject_info = config_retino_7T.init_config()
+#paths = make_paths()
+#subjects = paths.keys()
+subjects = ['eb120536'] # subject_info.keys()
 result_dir = 'analysis'
+main_dir = '/neurospin/tmp/retino/7T/' # shuold be as in pre-processing
 
 # choose volume-based or surface-based analysis
-sides =  ['left', 'right']# [False] #
+sides =  [False] #['left', 'right']# 
 # False: volume-based analysis
 # left: left hemisphere
 # right: right hemisphere
 
 # generic image name
-model_id = 'no_warp_moco'
-# wild_card = 'auf*.img'
+wild_card = 'rt*.nii'
 
 # ---------------------------------------------------------
 # -------- General data-related Information ---------------
@@ -107,35 +103,36 @@ def make_contrasts(sessions, n_reg=7):
 # Treat sequentially all subjects & acquisitions
 for subject in subjects:
     for side in sides:
-        print("Subject: %s, side: %s, model: %s" % (subject, side, model_id))
+        print("Subject: %s, side: %s" % (subject, side))
         if subject == 'rj090242':
             continue
 
         # step 1. set all the paths
-        fmri_dir = os.sep.join((paths[subject]['base'], 
-                                paths[subject]['acquisition']))
+        fmri_dir = os.path.join(main_dir, subject, 'fmri')
+        #fmri_dir = os.sep.join((paths[subject]['base'], 
+        #                        paths[subject]['acquisition']))
         write_dir = os.path.join(fmri_dir, result_dir)
         epi_mask = os.path.join(write_dir, 'mask.nii')
         if not os.path.exists(write_dir):
             os.mkdir(write_dir)
 
         # work on moco data
-        sessions = paths[subject]['sessions'] # moco_sessions
-        wild_card = paths[subject]['wild_card']
+        sessions = ['ring_pos', 'ring_neg',  'wedge_pos', 'wedge_neg']
         if side == 'left':
             wild_card = 'r*lh_.gii'
         elif side == 'right':
             wild_card = 'r*rh_.gii'
 
         # get the images
-        fmri_series = [glob.glob(
-                os.path.join(fmri_dir, session, wild_card))[0]
-                       for session in sessions]
+        fmri_series = [os.path.join(fmri_dir, 'rt%s_series_%s.nii' %
+                                    (subject, session)) for session in sessions]
             
         # compute the mask
         if side == False:
-            mask_array = compute_mask_files(fmri_series[0], epi_mask, True, 
+            mean_img = glob.glob(os.path.join(fmri_dir, 'mean*.nii'))[0]
+            mask_array = compute_mask_files(mean_img, epi_mask, True, 
                                             inf_threshold, sup_threshold)[0]
+
         # get the contrasts
         n_reg = make_dmtx(frametimes, add_regs=reg_matrix,
                           drift_model=drift_model, hfcut=hfcut).matrix.shape[1]
@@ -217,20 +214,28 @@ for subject in subjects:
     print ('Computing phase maps in subject %s' % subject)
     if side != False and subject == 'rj090242':
         continue # missing data for this subject
+    contrast_path = os.path.join(main_dir, subject, 'fmri', result_dir)
+    mesh_path = None
+    # offset_wedge and offset_ring are related to the encoding 
+    # of the stimulus
+    offset_wedge = 0
+    # means that the wedge starts at the right horizontal position
+    offset_ring = np.pi
+    # means that the ring starts at the middle position
+    threshold = 3.
+    size_threshold = 50
     for side in sides:
-        paths[subject]["contrasts"] = os.path.join(
-            paths[subject]['base'], paths[subject]['acquisition'], result_dir)
-    
-        # offset_wedge and offset_ring are related to the encoding 
-        # of the stimulus
-        offset_wedge = 0
-        # means that the wedge starts at the right horizontal position
-        offset_ring = np.pi
-        # means that the ring starts at the middle position
-        threshold = 3.
+        if side is not False:
+            mesh_path = config_retino_7T.make_paths()['%s_mesh'] %side
+
         # threshold of the main effects map, in z-value
-        angular_analysis.angular_maps(
-            side, paths[subject], all_reg, threshold=threshold,
-            size_threshold=50, offset_wedge=offset_wedge,
-            offset_ring=offset_ring, smooth=0., do_phase_unwrapping=True)
+        angular_maps(
+            side, contrast_path, mesh_path, 
+            all_reg=all_reg, 
+            threshold=threshold,
+            size_threshold=size_threshold, 
+            offset_wedge=offset_wedge,
+            offset_ring=offset_ring, 
+            smooth=0., 
+            do_phase_unwrapping=True)
         

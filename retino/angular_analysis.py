@@ -18,6 +18,9 @@ except:
     import mesh_processing as  mep
 
 NEGINF = -np.inf
+ALL_REG = ['sin_ring_pos', 'cos_ring_pos', 'sin_ring_neg',  'cos_ring_neg',
+           'sin_wedge_pos', 'cos_wedge_pos', 'sin_wedge_neg',
+           'cos_wedge_neg']
 
 ##################################################################
 # Ancillary functions
@@ -432,7 +435,8 @@ def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
 ##################################################################
 
 
-def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
+def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG, 
+                 threshold=3.1, size_threshold=10,
                  offset_wedge=0, offset_ring=0, smooth=0, 
                  do_wedge=True, do_ring=True, do_phase_unwrapping=False):
     """
@@ -458,8 +462,7 @@ def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
     #-------------------------------------------------------------------------
 
     if side == False:
-        stat_map = op.join(paths["contrasts"],
-                                'effects_of_interest_z_map.nii')
+        stat_map = op.join(contrast_path, 'effects_of_interest_z_map.nii')
  
         ## create an occipital data_mask
         mask = load(stat_map).get_data() > threshold
@@ -470,24 +473,22 @@ def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
         # load and mask the data
         data = {}
         for r in all_reg:
-            contrast_file = op.join(paths["contrasts"],
-                                             '%s_con.nii' % r)
+            contrast_file = op.join(contrast_path, '%s_con.nii' % r)
             data[r] = load(contrast_file).get_data()[mask]
         do_phase_unwrapping = False
         mesh = None
     else:
-        const_map = op.join(paths["contrasts"],
-                                 '%s_constant_con.gii' % side)
+        const_map = op.join(contrast_path, '%s_constant_con.gii' % side)
         if op.exists(const_map):
             const = load_texture(const_map)
         else:
             const = 0
-        mesh = paths['%s_mesh' % side]
-        stat_map = op.join(paths["contrasts"],
-                                '%s_effects_of_interest_z_map.gii' % side)
-        smooth_stat_map = op.join(paths["contrasts"],
-                                       '%s_effects_of_interest_z_map_smooth.gii'
-                                       % side)
+        mesh = mesh_path
+        stat_map = op.join(contrast_path, 
+                           '%s_effects_of_interest_z_map.gii' % side)
+        smooth_stat_map = op.join(contrast_path, 
+                                  '%s_effects_of_interest_z_map_smooth.gii'
+                                  % side)
         if smooth > 0:
             stat_map = mep.smooth_texture(
                 mesh, stat_map, smooth_stat_map, smooth)
@@ -498,8 +499,8 @@ def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
 
         data = {}
         for r in all_reg:
-            contrast_file = op.join(
-                paths["contrasts"], '%s_%s_con.gii' % (side, r))
+            contrast_file = op.join(contrast_path, 
+                                    '%s_%s_con.gii' % (side, r))
             if smooth == 0:
                 data[r] = load_texture(contrast_file).ravel()[mask.ravel()]
             else:
@@ -534,13 +535,13 @@ def angular_maps(side, paths, all_reg, threshold=3.1, size_threshold=10,
             wdata = np.zeros(load(stat_map).shape)
             wdata[mask > 0] = x
             wim = Nifti1Image(wdata, load(stat_map).get_affine())
-            save(wim, op.join(paths["contrasts"], '%s.nii' % name))
+            save(wim, op.join(contrast_path, '%s.nii' % name))
     else:
         for (x, name) in zip(data_, id_):
             ex = 0 * np.ones(np.size(mask)).astype(np.float32)
             ex[mask.squeeze()] = x
             save_texture(
-                op.join(paths["contrasts"], side + '_' + name + '.gii'),
+                op.join(contrast_path, side + '_' + name + '.gii'),
                 ex, 'estimate')
 
 

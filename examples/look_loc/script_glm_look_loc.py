@@ -225,23 +225,30 @@ for subject in subjects:
 # Retinotopy specific analysis: phase maps
 #----------------------------------------------------------------
 
-
 for subject in subjects:
     if sides == False:
         continue
     print ('Computing phase maps in subject %s' % subject)
-    for side in sides:
-        paths[subject]["contrasts"] = os.path.join(
+    contrast_path = os.path.join(
             paths[subject]['base'], paths[subject]['acquisition'], result_dir)
-        #
-        # offset_wedge and offset_ring are related to the actual stimulus
-        offset_wedge = - np.pi / 2
-        # means that the wedge starts at the right horizontal position
-        offset_ring = np.pi
-        # means that the ring starts at the middle position
-        threshold = 3.0
+    #
+    # offset_wedge and offset_ring are related to the actual stimulus
+    offset_wedge = - np.pi / 2
+    # means that the wedge starts at the right horizontal position
+    offset_ring = np.pi
+    # means that the ring starts at the middle position
+    threshold = 3.0
+
+    for side in sides:
+        if side is not False:
+            mesh_path = make_paths()[subject]['%s_mesh' % side]
         # threshold of the main effects map, in z-value
         angular_maps(
-            side, paths[subject], all_reg, threshold=threshold,
-            size_threshold=50, offset_wedge=offset_wedge,
-            offset_ring=offset_ring, smooth=0., do_phase_unwrapping=True)
+            side, contrast_path, mesh_path, 
+            all_reg=all_reg, 
+            threshold=threshold,
+            size_threshold=50, 
+            offset_wedge=offset_wedge,
+            offset_ring=offset_ring, 
+            smooth=0., 
+            do_phase_unwrapping=True)

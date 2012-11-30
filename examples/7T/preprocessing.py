@@ -70,7 +70,7 @@ for subject in ['eb120536']:#subject_info.keys():
     ##############################################################
     # Get the archive and convert the data using MRIcron
     ##############################################################
-    """
+
     for (session_id, session_index) in subject_dict['session_ids'].items():
         # fetch the data
         archive = glob.glob(os.path.join(
@@ -109,7 +109,7 @@ for subject in ['eb120536']:#subject_info.keys():
         for x in glob.glob(os.path.join(dicom_dir, '*')):
             os.remove(x)
         os.removedirs(dicom_dir)
-    """
+    
     ##############################################################
     # Preprocessing
     ##############################################################
@@ -182,7 +182,7 @@ for subject in ['eb120536']:#subject_info.keys():
     coreg_result = coreg(target=mean_image, source=anat_image,
                          jobtype='estimate')
 
-
+    """
     ##############################################################
     # Run freesurfer segmentation
     from nipype.interfaces.freesurfer import ReconAll
@@ -191,4 +191,4 @@ for subject in ['eb120536']:#subject_info.keys():
                             directive='all', 
                             subjects_dir = t1_dir,
                             T1_files = anat_image)
-    
+    """
