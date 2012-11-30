@@ -44,7 +44,7 @@ if not os.path.exists(main_dir):
 # parameters
 TR = 2.4
 
-for subject in ['eb120536']:#subject_info.keys():
+for subject in subject_info.keys(): #['eb120536']
     subject_dict = subject_info[subject]
 
     # the next part is automatic, possibly neurospin-specific
@@ -133,6 +133,7 @@ for subject in ['eb120536']:#subject_info.keys():
     ##############################################################
     #  Slice timing correction
     # this can be skipped 
+
     n_slices = load(fmri_series[0]).get_shape()[2]
     slice_order = range(1, 1 + np.uint8(n_slices))
     mem = Memory(base_dir=main_dir)
@@ -149,30 +150,43 @@ for subject in ['eb120536']:#subject_info.keys():
     for stf in st_result.outputs.timecorrected_files:
         time_corrected_files.append(os.path.join(fmri_dir,
                             os.path.basename(stf)))
-    
+
     ##############################################################
     # realign the data just to get the mean image
-    realign = mem.cache(spm.Realign)
-    realign_result = realign(
-        in_files=st_result.outputs.timecorrected_files,
-        register_to_mean=True, jobtype='estwrite', out_prefix='r')
-    mean_img = realign_result.outputs.mean_image
-    shutil.copyfile(mean_img,
-                os.path.join(fmri_dir, os.path.basename(mean_img)))
+    if True:    
+        realign = mem.cache(spm.Realign)
+        realign_result = realign(
+            in_files=st_result.outputs.timecorrected_files,
+            register_to_mean=True, jobtype='estwrite', out_prefix='r')
+        mean_img = realign_result.outputs.mean_image
+        shutil.copyfile(mean_img,
+                        os.path.join(fmri_dir, os.path.basename(mean_img)))
 
-    realigned_files = []
-    for rf in realign_result.outputs.realigned_files:
-        realigned_files.append(
-            os.path.join(fmri_dir, os.path.basename(rf)))
-        shutil.copyfile(rf, os.path.join(fmri_dir, os.path.basename(rf)))
+        realigned_files = []
+        for rf in realign_result.outputs.realigned_files:
+            realigned_files.append(
+                os.path.join(fmri_dir, os.path.basename(rf)))
+            shutil.copyfile(rf, os.path.join(fmri_dir, os.path.basename(rf)))
     
-    for rpf in realign_result.outputs.realignment_parameters:
-        shutil.copyfile(rf, os.path.join(fmri_dir, os.path.basename(rpf)))
-    
+        for rpf in realign_result.outputs.realignment_parameters:
+            shutil.copyfile(rf, os.path.join(fmri_dir, os.path.basename(rpf)))
+
+    else:
+        # or simply compute the mean image, assuming the images are realigned
+        for (idx, f) in enumerate(fmri_series):
+            if idx == 0:
+                mean_img = load(f).get_data().mean(-1)
+            else:
+                mean_img += load(f).get_data().mean(-1)
+        mean_img /= len(fmri_series)
+        save(Nifti1Image(mean_img, load(f).get_affine()), 
+             os.path.join(os.path.dirname(fmri_series[0]),
+                          'mean_%s' % os.path.basename(fmri_series[0])))
+
     ##############################################################
     # Coregister the anatomy to the mean functional image 
     #    (only rewrite the header)
-
+    
     coreg = mem.cache(spm.Coregister)
    
     # get the mean functionnal image to coregister the data on the anat
@@ -182,7 +196,7 @@ for subject in ['eb120536']:#subject_info.keys():
     coreg_result = coreg(target=mean_image, source=anat_image,
                          jobtype='estimate')
 
-    """
+    
     ##############################################################
     # Run freesurfer segmentation
     from nipype.interfaces.freesurfer import ReconAll
@@ -191,4 +205,4 @@ for subject in ['eb120536']:#subject_info.keys():
                             directive='all', 
                             subjects_dir = t1_dir,
                             T1_files = anat_image)
-    """
+
