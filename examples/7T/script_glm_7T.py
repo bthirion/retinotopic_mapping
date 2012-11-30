@@ -33,7 +33,7 @@ import config_retino_7T
 data_path, subject_info = config_retino_7T.init_config()
 #paths = make_paths()
 #subjects = paths.keys()
-subjects = ['eb120536'] # subject_info.keys()
+subjects = subject_info.keys()
 result_dir = 'analysis'
 main_dir = '/neurospin/tmp/retino/7T/' # shuold be as in pre-processing
 
@@ -43,8 +43,6 @@ sides =  [False] #['left', 'right']#
 # left: left hemisphere
 # right: right hemisphere
 
-# generic image name
-wild_card = 'rt*.nii'
 
 # ---------------------------------------------------------
 # -------- General data-related Information ---------------
@@ -104,8 +102,8 @@ def make_contrasts(sessions, n_reg=7):
 for subject in subjects:
     for side in sides:
         print("Subject: %s, side: %s" % (subject, side))
-        if subject == 'rj090242':
-            continue
+        #if subject == 'rj090242':
+        #    continue
 
         # step 1. set all the paths
         fmri_dir = os.path.join(main_dir, subject, 'fmri')
@@ -116,15 +114,16 @@ for subject in subjects:
         if not os.path.exists(write_dir):
             os.mkdir(write_dir)
 
-        # work on moco data
+        # image path
         sessions = ['ring_pos', 'ring_neg',  'wedge_pos', 'wedge_neg']
+        wild_card = 'rt*.nii'
         if side == 'left':
             wild_card = 'r*lh_.gii'
         elif side == 'right':
             wild_card = 'r*rh_.gii'
 
         # get the images
-        fmri_series = [os.path.join(fmri_dir, 'rt%s_series_%s.nii' %
+        fmri_series = [os.path.join(fmri_dir, '%s_series_%s.nii' %
                                     (subject, session)) for session in sessions]
             
         # compute the mask
@@ -226,7 +225,7 @@ for subject in subjects:
     size_threshold = 50
     for side in sides:
         if side is not False:
-            mesh_path = config_retino_7T.make_paths()['%s_mesh'] %side
+            mesh_path = config_retino_7T.make_paths()[subject]['%s_mesh' % side]
 
         # threshold of the main effects map, in z-value
         angular_maps(

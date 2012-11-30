@@ -113,8 +113,8 @@ def init_config():
             'subject_id': 'jh100405',
             'session_ids': {
                 't1': '000002_mprage-sag-T1-160sl',
-                'ring_neg': '000012_MoCoSeries',
-                'ring_pos': '000014_MoCoSeries',
+                'ring_pos': '000012_MoCoSeries',
+                'ring_neg': '000014_MoCoSeries',
                 'wedge_pos': '000017_MoCoSeries',
                 'wedge_neg': '000019_MoCoSeries'},
             'date': '20110914',
@@ -124,9 +124,9 @@ def init_config():
             'folder': 'vr100551',
             'subject_id': 'vr100551-786_001',
             'session_ids': {
-                't1': '000002_mprage-sag-T1-160sl',
-                'ring_neg': '000009_MoCoSeries',
-                'ring_pos': '000011_MoCoSeries',
+                't1': '000003_mprage-sag-T1-160sl',
+                'ring_pos': '000009_MoCoSeries',
+                'ring_neg': '000011_MoCoSeries',
                 'wedge_pos': '000013_MoCoSeries',
                 'wedge_neg': '000015_MoCoSeries'},
             'date': '20110928',
@@ -137,20 +137,21 @@ def init_config():
             'subject_id': 'kr080082',
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
-                'ring_neg': '000007_MoCoSeries',
-                'ring_pos': '000009_MoCoSeries',
+                'ring_pos': '000007_MoCoSeries',
+                'ring_neg': '000008_mz-ep2d-bold-BT-132',
                 'wedge_pos': '000015_MoCoSeries',
                 'wedge_neg': '000017_MoCoSeries'},
             'date': '20110928',
             'protocol': 'ring + wedge',
             'scanner': '7T'},
+        # CAVEAT: Something whent wrong with series 00009 ??
         'rj090242':{
             'folder': 'rj090242-790_001',
             'subject_id': 'rj090242',
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
-                'ring_neg': '000007_MoCoSeries',
-                'ring_pos': '000009_MoCoSeries',
+                'ring_pos': '000007_MoCoSeries',
+                'ring_neg': '000009_MoCoSeries',
                 'wedge_pos': '000011_MoCoSeries',
                 'wedge_neg': '000013_MoCoSeries'},
             'date': '20111012',
@@ -161,8 +162,8 @@ def init_config():
             'subject_id': 'td110140',
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
-                'ring_neg': '000011_MoCoSeries',
-                'ring_pos': '000013_MoCoSeries',
+                'ring_pos': '000011_MoCoSeries',
+                'ring_neg': '000013_MoCoSeries',
                 'wedge_pos': '000015_MoCoSeries',
                 'wedge_neg': '000017_MoCoSeries'},
             # CAVEAT: there is also the series 007, not sure of what happened

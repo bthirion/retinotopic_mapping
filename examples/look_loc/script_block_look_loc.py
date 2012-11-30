@@ -19,7 +19,8 @@ from nipy.modalities.fmri.experimental_paradigm import BlockParadigm
 from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
 from nipy.labs import compute_mask_files
 
-from retino.angular_analysis import load_texture, save_texture
+from retino.angular_analysis import (
+    load_texture, save_texture, cc_array_mask, cc_mesh_mask, phase_unwrapping)
 from config_look_loc import make_paths
 
 # -----------------------------------------------------------
@@ -71,7 +72,7 @@ drift_model = "Cosine"
 hf_cut = 128
 
 # Treat sequentially all subjects & acquisitions
-for subject in subjects:
+for subject in subjects[:1]:
     #  generate all paths
     fmri_dir = os.path.join(paths[subject]['base'],
                             paths[subject]['acquisition'])
@@ -170,7 +171,6 @@ for subject in subjects:
 # Retinotopy specific analysis: phase maps
 #----------------------------------------------------------------
 import os.path as op
-from angular_analysis import cc_array_mask, cc_mesh_mask, phase_unwrapping
 
 
 for subject in subjects:
@@ -212,7 +212,7 @@ for subject in subjects:
         stat_map = load_texture(stat_map)
         mask_array = cc_mesh_mask(mesh, np.ravel(stat_map) > threshold,
                             size_threshold)
-        data = load_texture(contrast_map)[mask_array] + (
+        data = load_texture(contrast_map).ravel()[mask_array] + (
             offset_wedge +  np.pi / 2 + np.pi / 12)
         data[data > np.pi] -= 2 * np.pi
         data[data < -np.pi] += 2  * np.pi
