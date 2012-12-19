@@ -11,7 +11,7 @@ import glob
 # ----------------------------------------------------------------
 
 
-
+"""
 def make_paths():
 
     db_path = "/volatile/thirion/data/retino_7T" 
@@ -67,7 +67,7 @@ def make_paths():
         
 
     return paths
-
+"""
 
 def init_config():
     """Initialize texture decoding experiement specific variables

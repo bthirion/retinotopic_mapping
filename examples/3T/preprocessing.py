@@ -195,7 +195,7 @@ for subject in subject_info.keys():
     coreg_result = coreg(target=mean_image, source=anat_image,
                          jobtype='estimate')
 
-    """
+    
     ##############################################################
     # Run freesurfer segmentation
     from nipype.interfaces.freesurfer import ReconAll
@@ -204,4 +204,4 @@ for subject in subject_info.keys():
                             directive='all', 
                             subjects_dir = t1_dir,
                             T1_files = anat_image)
-    """
+    

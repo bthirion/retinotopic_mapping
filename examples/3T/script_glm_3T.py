@@ -60,7 +60,7 @@ reg_matrix = np.vstack((r1, r2)).T
 # ---------------------------------------------------------
 
 #---------- Masking parameters
-inf_threshold = 0.6
+inf_threshold = 0.5
 sup_threshold = 0.9
 
 #---------- Design Matrix
