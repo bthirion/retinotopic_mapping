@@ -38,7 +38,7 @@ result_dir = 'analysis'
 main_dir = '/neurospin/tmp/retino/7T/' # shuold be as in pre-processing
 
 # choose volume-based or surface-based analysis
-sides =  [False] #['left', 'right']# 
+sides = [False]  #['left', 'right']#
 # False: volume-based analysis
 # left: left hemisphere
 # right: right hemisphere
@@ -69,6 +69,7 @@ sup_threshold = 0.9
 drift_model = "Cosine"
 hfcut = 128
 
+
 def make_contrasts(sessions, n_reg=7):
     """ Build the contrasts for the loolkloc experiment
 
@@ -80,7 +81,7 @@ def make_contrasts(sessions, n_reg=7):
     (positive wedge, negative wedge, positive ring, negative ring)
     """
     ring_pos, ring_neg, wedge_pos, wedge_neg = sessions
-    con_ids = ['sin_ring_pos', 'cos_ring_pos', 'sin_ring_neg',  'cos_ring_neg',
+    con_ids = ['sin_ring_pos', 'cos_ring_pos', 'sin_ring_neg', 'cos_ring_neg',
                'sin_wedge_pos', 'cos_wedge_pos', 'sin_wedge_neg',
                'cos_wedge_neg']
 
@@ -107,15 +108,13 @@ for subject in subjects:
 
         # step 1. set all the paths
         fmri_dir = os.path.join(main_dir, subject, 'fmri')
-        #fmri_dir = os.sep.join((paths[subject]['base'], 
-        #                        paths[subject]['acquisition']))
         write_dir = os.path.join(fmri_dir, result_dir)
         epi_mask = os.path.join(write_dir, 'mask.nii')
         if not os.path.exists(write_dir):
             os.mkdir(write_dir)
 
         # image path
-        sessions = ['ring_pos', 'ring_neg',  'wedge_pos', 'wedge_neg']
+        sessions = ['ring_pos', 'ring_neg', 'wedge_pos', 'wedge_neg']
         wild_card = 'rt*.nii'
         if side == 'left':
             wild_card = 'r*lh_.gii'
@@ -125,11 +124,11 @@ for subject in subjects:
         # get the images
         fmri_series = [os.path.join(fmri_dir, '%s_series_%s.nii' %
                                     (subject, session)) for session in sessions]
-            
+
         # compute the mask
         if side == False:
             mean_img = glob.glob(os.path.join(fmri_dir, 'mean*.nii'))[0]
-            mask_array = compute_mask_files(mean_img, epi_mask, True, 
+            mask_array = compute_mask_files(mean_img, epi_mask, True,
                                             inf_threshold, sup_threshold)[0]
 
         # get the contrasts
@@ -197,25 +196,25 @@ for subject in subjects:
         write_array[mask_array] = st.norm.isf(st.f.sf(F_ / 8, 8, 480))
         if side == False:
             contrast_image = Nifti1Image(write_array, affine)
-            save(contrast_image, 
+            save(contrast_image,
                  os.path.join(write_dir, 'effects_of_interest_z_map.nii'))
         else:
             contrast_path = os.path.join(
                 write_dir, '%s_effects_of_interest_z_map.gii' % side)
             save_texture(contrast_path, write_array)
-        
+
 
 #--------------------------------------------------------------------
 # Retinotopy specific analysis: phase maps
 #--------------------------------------------------------------------
-    
+
 for subject in subjects:
     print ('Computing phase maps in subject %s' % subject)
     if side != False and subject == 'rj090242':
         continue # missing data for this subject
     contrast_path = os.path.join(main_dir, subject, 'fmri', result_dir)
     mesh_path = None
-    # offset_wedge and offset_ring are related to the encoding 
+    # offset_wedge and offset_ring are related to the encoding
     # of the stimulus
     offset_wedge = 0
     # means that the wedge starts at the right horizontal position
@@ -229,12 +228,11 @@ for subject in subjects:
 
         # threshold of the main effects map, in z-value
         angular_maps(
-            side, contrast_path, mesh_path, 
-            all_reg=all_reg, 
+            side, contrast_path, mesh_path,
+            all_reg=all_reg,
             threshold=threshold,
-            size_threshold=size_threshold, 
+            size_threshold=size_threshold,
             offset_wedge=offset_wedge,
-            offset_ring=offset_ring, 
-            smooth=0., 
+            offset_ring=offset_ring,
+            smooth=0.,
             do_phase_unwrapping=True)
-        

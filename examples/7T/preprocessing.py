@@ -104,7 +104,7 @@ for subject in ['eb120536']:  #subject_info.keys(): #
         else:
             print nifti_file, fmri_sessions[session_id]
             shutil.move(nifti_file, fmri_sessions[session_id])
-        
+
         # remove the dicom dirs
         for x in glob.glob(os.path.join(dicom_dir, '*')):
             os.remove(x)
@@ -134,7 +134,7 @@ for subject in ['eb120536']:  #subject_info.keys(): #
 
     ##############################################################
     #  Slice timing correction
-    # this can be skipped 
+    # this can be skipped
 
     n_slices = load(fmri_series[0]).get_shape()[2]
     slice_order = range(1, 1 + np.uint8(n_slices))
@@ -155,7 +155,7 @@ for subject in ['eb120536']:  #subject_info.keys(): #
 
     ##############################################################
     # realign the data just to get the mean image
-    if True:    
+    if True:
         realign = mem.cache(spm.Realign)
         realign_result = realign(
             in_files=st_result.outputs.timecorrected_files,
@@ -169,7 +169,7 @@ for subject in ['eb120536']:  #subject_info.keys(): #
             realigned_files.append(
                 os.path.join(fmri_dir, os.path.basename(rf)))
             shutil.copyfile(rf, os.path.join(fmri_dir, os.path.basename(rf)))
-    
+
         for rpf in realign_result.outputs.realignment_parameters:
             shutil.copyfile(rf, os.path.join(fmri_dir, os.path.basename(rpf)))
 
@@ -181,30 +181,28 @@ for subject in ['eb120536']:  #subject_info.keys(): #
             else:
                 mean_img += load(f).get_data().mean(-1)
         mean_img /= len(fmri_series)
-        save(Nifti1Image(mean_img, load(f).get_affine()), 
+        save(Nifti1Image(mean_img, load(f).get_affine()),
              os.path.join(os.path.dirname(fmri_series[0]),
                           'mean_%s' % os.path.basename(fmri_series[0])))
 
     ##############################################################
-    # Coregister the anatomy to the mean functional image 
+    # Coregister the anatomy to the mean functional image
     #    (only rewrite the header)
-    
+
     coreg = mem.cache(spm.Coregister)
-   
+
     # get the mean functionnal image to coregister the data on the anat
     mean_image = glob.glob(os.path.join(fmri_dir, 'mean*.nii'))[0]
-    
+
     # does the coregistration of the time corrected+realigned fmri series
     coreg_result = coreg(target=mean_image, source=anat_image,
                          jobtype='estimate')
 
-    
     ##############################################################
     # Run freesurfer segmentation
     from nipype.interfaces.freesurfer import ReconAll
-    reconall =  mem.cache(ReconAll)
-    recon_result = reconall(subject_id = subject, 
-                            directive='all', 
-                            subjects_dir = t1_dir,
-                            T1_files = anat_image)
-
+    reconall = mem.cache(ReconAll)
+    recon_result = reconall(subject_id=subject,
+                            directive='all',
+                            subjects_dir=t1_dir,
+                            T1_files=anat_image)
