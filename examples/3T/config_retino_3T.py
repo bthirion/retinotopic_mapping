@@ -3,8 +3,6 @@ This file prepares some paths for the analysis of the lookloc_data.
 It is simply a representation of where the data is on the file system
 """
 
-import os.path as op
-import glob
 
 # ----------------------------------------------------------------
 # data paths
@@ -35,6 +33,7 @@ def init_config():
         'kr080082': {
             'folder': 'kr080082-2041_001',
             'subject_id': 'kr080082',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002_mprage-sag-T1-160sl',
                 'wedge_pos': '000018_MoCoSeries',
@@ -46,6 +45,7 @@ def init_config():
         'mr080072': {
             'folder': 'mr080072-2037_001',
             'subject_id': 'mr080072',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002_mprage-sag-T1-160sl',
                 'wedge_pos': '000020_MoCoSeries',
@@ -57,6 +57,7 @@ def init_config():
         'vl100318': {
             'folder': 'vl100318-2038_001',
             'subject_id': 'vl100318',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002_mprage-sag-T1-160sl',
                 'wedge_pos': '000018_MoCoSeries',
@@ -68,6 +69,7 @@ def init_config():
         'ap100009': {
             'folder': 'ap100009-1789_001',
             'subject_id': 'ap100009',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002_T1-MPRage-Sag',
                 'wedge_pos': '000018_MoCoSeries',
@@ -79,6 +81,7 @@ def init_config():
         'ap100009_2': {
             'folder': 'ap100009-3085_001',
             'subject_id': 'ap100009',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000020',
                 'wedge_pos': '000017',
@@ -90,6 +93,7 @@ def init_config():
         'ib100049': {
             'folder': '',
             'subject_id': 'ib100049',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000003',
                 'wedge_pos': '000019',
@@ -101,6 +105,7 @@ def init_config():
         'ns110383_1': {
             'folder': '',
             'subject_id': 'ns110383',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002',
                 'wedge_pos': '000018',
@@ -112,6 +117,7 @@ def init_config():
         'rm080030': {
             'folder': '',
             'subject_id': 'rm080030',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002',
                 'wedge_pos': '000020',
@@ -123,6 +129,7 @@ def init_config():
         'pf120155_1': {
             'folder': '',
             'subject_id': 'pf120155',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002',
                 'wedge_pos': '000018',
@@ -134,6 +141,7 @@ def init_config():
         'ap100009_3': {
             'folder': '',
             'subject_id': 'ap100009',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002',
                 'wedge_pos': '000018',
@@ -145,6 +153,7 @@ def init_config():
         'ns110383_2': {
             'folder': '',
             'subject_id': 'ns110383',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002',
                 'wedge_pos': '000018',
@@ -156,6 +165,7 @@ def init_config():
         'pf120155_2': {
             'folder': '',
             'subject_id': 'pf120155',
+            'session_keys': ['wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000003',
                 'wedge_pos': '000019',
