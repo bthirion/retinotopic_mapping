@@ -36,7 +36,7 @@ result_dir = 'analysis'
 main_dir = '/neurospin/tmp/retino/3T/' # shuold be as in pre-processing
 
 # choose volume-based or surface-based analysis
-sides =  [False] #['left', 'right']# 
+sides =  ['left', 'right'] # [False] #
 # False: volume-based analysis
 # left: left hemisphere
 # right: right hemisphere
@@ -90,7 +90,6 @@ def make_contrasts(sessions, n_reg=7):
     contrasts['cos_wedge_neg'][wedge_neg] = np.eye(n_reg)[1]
     return contrasts, con_ids
 
-
 # Treat sequentially all subjects & acquisitions
 for subject in subjects:
     for side in sides:
@@ -100,8 +99,6 @@ for subject in subjects:
 
         # step 1. set all the paths
         fmri_dir = os.path.join(main_dir, subject, 'fmri')
-        #fmri_dir = os.sep.join((paths[subject]['base'], 
-        #                        paths[subject]['acquisition']))
         write_dir = os.path.join(fmri_dir, result_dir)
         epi_mask = os.path.join(write_dir, 'mask.nii')
         if not os.path.exists(write_dir):
@@ -109,15 +106,16 @@ for subject in subjects:
 
         # image path
         sessions = ['wedge_pos', 'wedge_neg']
-        wild_card = 'rt*.nii'
+        wild_card = '*.nii'
         if side == 'left':
-            wild_card = 'r*lh_.gii'
+            wild_card = '*lh.gii'
         elif side == 'right':
-            wild_card = 'r*rh_.gii'
+            wild_card = '*rh.gii'
 
         # get the images
-        fmri_series = [os.path.join(fmri_dir, '%s_series_%s.nii' %
-                                    (subject, session)) for session in sessions]
+        fmri_series = [glob.glob(os.path.join(fmri_dir, '%s_series_%s%s' %
+                                    (subject, session, wild_card)))[0]
+                       for session in sessions]
             
         # compute the mask
         if side == False:
@@ -195,17 +193,16 @@ for subject in subjects:
         else:
             contrast_path = os.path.join(
                 write_dir, '%s_effects_of_interest_z_map.gii' % side)
-            save_texture(contrast_path, write_array)
-        
+            save_texture(contrast_path, write_array)     
 
 #--------------------------------------------------------------------
 # Retinotopy specific analysis: phase maps
 #--------------------------------------------------------------------
-    
+
+_, all_reg = make_contrasts(['wedge_pos', 'wedge_neg'], n_reg=7)
+
 for subject in subjects:
     print ('Computing phase maps in subject %s' % subject)
-    if side != False and subject == 'rj090242':
-        continue # missing data for this subject
     contrast_path = os.path.join(main_dir, subject, 'fmri', result_dir)
     mesh_path = None
     # offset_wedge and offset_ring are related to the encoding 
@@ -218,8 +215,10 @@ for subject in subjects:
     size_threshold = 50
     for side in sides:
         if side is not False:
-            mesh_path = config_retino_3T.make_paths()[subject]['%s_mesh' % side]
-
+            # mesh_path = config_retino_3T.make_paths()[subject]['%s_mesh' % side]
+            mesh_path = os.path.join(main_dir, subject, 't1', subject,
+                                     'surf/%sh.white.gii' % side[0])
+            
         # threshold of the main effects map, in z-value
         angular_maps(
             side, contrast_path, mesh_path, 
