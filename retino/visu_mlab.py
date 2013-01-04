@@ -12,7 +12,7 @@ import enthought.mayavi.mlab as mlab
 try:
     from parietal.surface_operations.mesh_processing import mesh_arrays
 except:
-    from parietal_copy.mesh_processing import mesh_arrays
+    from mesh_processing import mesh_arrays
 
 
 def plot_retino_image(mesh_path, name, tf=None, tex=None, curv=None, mask=None,

@@ -12,9 +12,6 @@ from nibabel.gifti import read
 
 from retino.visu_mlab import plot_retino_image
 from config_look_loc import make_paths
-# import config_retino_7T
-
-# get the paths information
 paths = make_paths()
 
 for subject in paths.keys():
