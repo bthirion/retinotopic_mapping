@@ -53,30 +53,14 @@ def mesh_arrays(mesh, nibabel=True):
        and outer normal
    fixme: use intent !
    """
-   if nibabel:
-       if isinstance(mesh, basestring):
-           mesh_ = read(mesh)
-       else:
-           mesh_ = mesh
-       cor = mesh_.getArraysFromIntent("NIFTI_INTENT_POINTSET")[0].data
-       tri = mesh_.getArraysFromIntent("NIFTI_INTENT_TRIANGLE")[0].data
-       return cor, tri
-       if len(mesh_.darrays) == 2:
-           cor, tri = mesh_.darrays
-           return cor.data, tri.data
-       elif len(mesh_.darrays) == 3:
-           cor, norm, tri = mesh_.darrays
-           return cor.data, tri.data, norm.data
-       else:
-           raise Exception("file not handled")
+   if isinstance(mesh, basestring):
+       mesh_ = read(mesh)
    else:
-       # use pygift-helpers library
-       from gifti import loadImage
-       mesh_ = loadImage(mesh)
-       cor = mesh_.arrays[0].data
-       tri = mesh_.arrays[1].data
-       return cor, tri
-
+       mesh_ = mesh
+   cor = mesh_.getArraysFromIntent("NIFTI_INTENT_POINTSET")[0].data
+   tri = mesh_.getArraysFromIntent("NIFTI_INTENT_TRIANGLE")[0].data
+   return cor, tri
+   
 
 def mesh_from_arrays(coord, triangles, path=None):
     """ Create a mesh object from two arrays
