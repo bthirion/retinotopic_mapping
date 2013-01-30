@@ -34,10 +34,9 @@ T1_TEMPLATE = '/i2bm/local/spm8/templates/T1.nii'
 ##############################################################
 
 # database path
-data_path, subject_info = config_retino_3T.init_config()
+data_path, main_dir, subject_info = config_retino_3T.init_config()
 
 # directory where the analysis will take place
-main_dir = '/neurospin/tmp/retino/3T/'
 if not os.path.exists(main_dir):
     os.mkdir(main_dir)
 

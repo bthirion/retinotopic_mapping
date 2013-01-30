@@ -30,10 +30,9 @@ import config_retino_3T
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
 #-----------------------------------------------------------
-data_path, subject_info = config_retino_3T.init_config()
+data_path, main_dir, subject_info = config_retino_3T.init_config()
 subjects = subject_info.keys()
 result_dir = 'analysis'
-main_dir = '/neurospin/tmp/retino/3T/' # shuold be as in pre-processing
 
 # choose volume-based or surface-based analysis
 sides =  ['left', 'right'] # [False] #
@@ -90,6 +89,7 @@ def make_contrasts(sessions, n_reg=7):
     contrasts['cos_wedge_neg'][wedge_neg] = np.eye(n_reg)[1]
     return contrasts, con_ids
 
+"""
 # Treat sequentially all subjects & acquisitions
 for subject in subjects:
     for side in sides:
@@ -194,7 +194,7 @@ for subject in subjects:
             contrast_path = os.path.join(
                 write_dir, '%s_effects_of_interest_z_map.gii' % side)
             save_texture(contrast_path, write_array)     
-
+"""
 #--------------------------------------------------------------------
 # Retinotopy specific analysis: phase maps
 #--------------------------------------------------------------------

@@ -21,7 +21,8 @@ def init_config():
     """
     # data repository
     data_path = '/neurospin/acquisition/database/TrioTim'
-
+    main_dir = '/neurospin/tmp/retino/3T/'
+    
     # word_decoding experiment:
     # 'ap100009', 'kr080082', 'mr080072', 'vl100318'
     # 'bt080165' did not do it. What about 'ol120056' ?
@@ -175,4 +176,4 @@ def init_config():
             'scanner': '3T'},
 
         }    
-    return data_path, subject_info
+    return data_path, main_dir, subject_info

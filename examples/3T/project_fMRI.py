@@ -28,16 +28,14 @@ FWHM = 5.
 # data paths
 # ----------------------------------------------------------------
 
-_, subject_info = config_retino_3T.init_config()
-
-data_path = '/neurospin/tmp/retino/3T/'
+_, main_dir, subject_info = config_retino_3T.init_config()
 
 # possibly loop on the subjects
 for subject in subject_info.keys():
 
     # the following ones are necessary in order to get the fmri data paths
-    fmri_dir = os.path.join(data_path, subject, 'fmri')
-    fs_dir = os.path.join(data_path, subject, 't1', subject)
+    fmri_dir = os.path.join(main_dir, subject, 'fmri')
+    fs_dir = os.path.join(main_dir, subject, 't1', subject)
     
     # take the mean image that has been coregistered to the anat
     mean_image = glob.glob(os.path.join(fmri_dir, 'mean*.nii'))[0]
@@ -71,8 +69,8 @@ for subject in subject_info.keys():
 
 # smooth the data
 for subject in subject_info.keys(): 
-    fmri_dir = os.path.join(data_path, subject, 'fmri')
-    fs_dir = os.path.join(data_path, subject, 't1', subject)
+    fmri_dir = os.path.join(main_dir, subject, 'fmri')
+    fs_dir = os.path.join(main_dir, subject, 't1', subject)
     for session in subject_info[subject]['session_keys']:
         for hemi in ['left', 'right']:
             wild_card = '%sh.gii' % hemi[0]
