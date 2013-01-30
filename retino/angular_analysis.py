@@ -301,26 +301,40 @@ def visual_areas_delineation(mesh, ring, wedge, lat=None, lon=None, side=None,
 def get_ring_minimum(xy, ring, thresh=0):
     """Get the minimum of the ring values, assuming an ellispoidal shape"""
     x, y = xy[ring < thresh].mean(0) 
-    print x, y
-    """
-    from sklearn.covariance.outlier_detection import EllipticEnvelope
-    inliers = EllipticEnvelope(contamination=.1).fit(xy).support_ *\
-              (ring < thresh)
-    xy = xy.copy()[inliers]
-    xy2 = np.vstack((np.ones(xy.shape[0]), xy.T[0], xy.T[1], xy.T[0] ** 2, 
-                     xy.T[1] ** 2, xy.T[0] * xy.T[1])).T
-    A = np.dot(np.linalg.pinv(xy2), ring[inliers])  
-    grad = np.array([A[1], A[2]])
-    hessian = 2 * np.array([[ A[3], A[5] / 2], [A[5] / 2, A[4]]])
-    x, y = - np.dot(np.linalg.inv(hessian), grad)
-    print x, y
-    """
     return np.array([x, y])
+
+
+def find_fovea(mesh, side, mask, xy):
+    """Small utility that returns the assumed fovea position on a mesh
+    of a certain hemisphere"""
+    from .group_analysis import resample_from_average
+    REF_LEFT = np.arange(163842) == 71785
+    REF_RIGHT = np.arange(163842) == 129181
+    binary_texture = REF_LEFT if side == 'left' else REF_RIGHT
+    binary_texture_path =  '/tmp/fovea.gii'
+    save_texture(binary_texture_path, binary_texture, intent='none')
+    subject_path = op.join(op.dirname(mesh), '/..')
+
+    # resample from the average to the individual space
+    resampled = resample_from_average(binary_texture_path, subject_path,
+                                      side, verbose=True)
+
+    # get the vertices of the mesh
+    vertices, _ = mep.mesh_arrays(mesh)
+    point = vertices[load_texture(resampled).argmax()]
+    sq_dist = ((vertices - point) ** 2). sum(1)
+
+    # find the point on the mask
+    fovea = xy[np.argmin(sq_dist[mask])]
+    return fovea
 
 
 def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
     """"""
-    center = get_ring_minimum(xy, ring, 0) # - np.pi / 2)
+    if ring is None:
+        center = find_fovea(mesh, side, mask_, xy)
+    else:
+        center = get_ring_minimum(xy, ring, 0) # - np.pi / 2)
     ecc = np.sqrt(np.sum((xy - center) ** 2, 1))
     angle = - np.arctan2(xy.T[1] - center[1], xy.T[0] - center[0])
     radius = np.sqrt(np.mean(ecc ** 2)) * 1.2
@@ -424,7 +438,8 @@ def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
         plt.tripcolor(xy.T[0], xy.T[1], tri, wedge, vmin=vmin, vmax=vmax)
         plt.plot(center[0], center[1], '+k', linewidth=4)
         plt.subplot(1, 3, 3)
-        plt.tripcolor(xy.T[0], xy.T[1], tri, ring)
+        if ring is not None:
+            plt.tripcolor(xy.T[0], xy.T[1], tri, ring)
         plt.plot(center[0], center[1], '+k', linewidth=4)
     
     return mask, polar, visual_maps

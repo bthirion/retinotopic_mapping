@@ -9,17 +9,19 @@ First run export SUBJECTS_DIR=/volatile/thirion/data/lookloc
 Author: Bertrand Thirion, 2012
 """
 import os.path as op
-import commands
 import numpy as np
 from nibabel.gifti import read
-from nibabel import Nifti1Image
-from nibabel.freesurfer import mghformat
 try:
     from parietal.surface_operations.mesh_processing import mesh_arrays
 except:
     from retino.mesh_processing import mesh_arrays
+try:
+    from mayavi import mlab
+except:
+    from enthought.mayavi import mlab
 
 from retino.angular_analysis import load_texture
+from retino.group_analysis import resample_to_average
 from config_look_loc import make_paths
 
 # get all the ,necessary paths
@@ -35,37 +37,6 @@ right_vertices, _ = mesh_arrays(right_ref_mesh)
 
 
 ### fixme: this is copied from group_analysis
-def resample_to_average(tex_path, subject, side, verbose=False):
-    """Resample a given texture to fsaverage
-
-    Parameters
-    ==========
-    tex_path: string, path of the input texture
-    subject: string, subject id in the freesurfer database
-    side: string, on of ['left', 'right']
-    verbose: boolean, the verbosity mode
-
-    Returns
-    =======
-    resmapled: string, path of the result
-    """
-    resampled = op.join(op.dirname(tex_path),
-                        op.basename(tex_path)[:-4] + '_resampled.gii')
-
-    # convert the input to .mgz format
-    mgz = tex_path[:-4] + '.mgz'
-    tex = load_texture(tex_path)[np.newaxis].T
-    mghformat.save(Nifti1Image(tex, np.eye(4)), mgz)
-
-    # run the resmapling using freesurfer tools
-    fs_comment = commands.getoutput(
-        'mri_surf2surf --srcsubject %s --srcsurfval %s --trgsubject ico '\
-            '--trgsurfval %s --hemi %sh --trgicoorder 7' % (
-            subject, mgz, resampled, side[0]))
-    if verbose:
-        print fs_comment
-    return resampled
-
 left_pos, right_pos = [], []
 for subject in paths.keys():
     print subject
@@ -106,10 +77,6 @@ right_fovea = right_vertices[np.argmin(
         np.sum((right_vertices - right_fovea_ * rescaling) ** 2, 1))]
 
 # Plotting to look at the result
-try:
-    from mayavi import mlab
-except:
-    from enthought.mayavi import mlab
 
 mlab.figure(bgcolor=(.8, .8, .8))
 for point in [left_fovea, right_fovea]:
