@@ -34,17 +34,16 @@ T1_TEMPLATE = '/i2bm/local/spm8/templates/T1.nii'
 ##############################################################
 
 # database path
-data_path, subject_info = config_retino_7T.init_config()
+data_path, main_dir, subject_info = config_retino_7T.init_config()
 
 # directory where the analysis will take place
-main_dir = '/neurospin/tmp/retino/7T/'
 if not os.path.exists(main_dir):
     os.mkdir(main_dir)
 
 # parameters
 TR = 2.4
 
-for subject in ['eb120536']:  #subject_info.keys(): #
+for subject in ['td110140', 'jh100405']: # subject_info.keys(): #
     subject_dict = subject_info[subject]
 
     # the next part is automatic, possibly neurospin-specific
@@ -114,9 +113,11 @@ for subject in ['eb120536']:  #subject_info.keys(): #
     # Preprocessing
     ##############################################################
 
+    mem = Memory(base_dir=subject_dir)
+
     ##############################################################
     # Anatomical segmentation (White/Grey matter)
-    mem = Memory(base_dir=subject_dir)
+    """
     seg = mem.cache(spm.Segment)
     if subject == 'eb120536':
         anat_image = os.path.join(t1_dir, 'ratio.nii')
@@ -197,12 +198,13 @@ for subject in ['eb120536']:  #subject_info.keys(): #
     # does the coregistration of the time corrected+realigned fmri series
     coreg_result = coreg(target=mean_image, source=anat_image,
                          jobtype='estimate')
-
+    """
     ##############################################################
     # Run freesurfer segmentation
+    nobias = os.path.join(t1_dir, '%s_nobias.nii' % subject)
     from nipype.interfaces.freesurfer import ReconAll
     reconall = mem.cache(ReconAll)
     recon_result = reconall(subject_id=subject,
                             directive='all',
                             subjects_dir=t1_dir,
-                            T1_files=anat_image)
+                            T1_files=nobias)

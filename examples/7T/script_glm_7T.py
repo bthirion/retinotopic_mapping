@@ -30,12 +30,11 @@ import config_retino_7T
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
 #-----------------------------------------------------------
-data_path, subject_info = config_retino_7T.init_config()
+_, main_dir, subject_info = config_retino_7T.init_config()
 #paths = make_paths()
 #subjects = paths.keys()
 subjects = subject_info.keys()
 result_dir = 'analysis'
-main_dir = '/neurospin/tmp/retino/7T/' # shuold be as in pre-processing
 
 # choose volume-based or surface-based analysis
 sides = [False]  #['left', 'right']#

@@ -11,81 +11,26 @@ import glob
 # ----------------------------------------------------------------
 
 
-"""
-def make_paths():
-
-    db_path = "/volatile/thirion/data/retino_7T" 
-    fs_db = None 
-    subjects = [ 'gm110134', 'jh100405', 'kr080082', 'vr100551', 'rj090242', 
-                 'td110140'] 
-    acquisition = ''
-    sessions = ['session_1', 'session_2', 'session_3', 'session_4']
-    wild_card = "rf*.nii"
-
-    paths = {}
-
-    for subject in subjects:
-        paths[subject] = {
-            'base': op.join(db_path, subject),
-            'acquisition': acquisition,
-            'sessions': sessions,
-            'mean_image': \
-                glob.glob(op.sep.join((
-                            db_path, subject, acquisition, sessions[0],
-                            'meanf*.img')))[0],
-            'epi_mask':\
-                glob.glob(op.sep.join((
-                            db_path, subject, acquisition, sessions[0],
-                            'mask.nii')))[0],
-            'motion':\
-                glob.glob(op.sep.join((
-                            db_path, subject, acquisition, sessions[0],
-                            'rp_f*.txt')))[0],
-            'wild_card' : wild_card
-            }
-        if fs_db is None:
-            fs_db = db_path
-    
-        paths[subject]['t1'] = glob.glob('%s/%s/t1/*.img' % 
-                                                (fs_db, subject))[0]
-        # freesurfer stuff
-        paths[subject]['left_mesh'] = '%s/%s/t1/%s/surf/lh.white.gii' % (
-            fs_db, subject, subject)
-        paths[subject]['right_mesh'] = '%s/%s/t1/%s/surf/rh.white.gii' % (
-            fs_db, subject, subject)
-        paths[subject]['left_inflated'] = \
-            '%s/%s/t1/%s/surf/lh.inflated.gii' % (fs_db, subject, subject)
-        paths[subject]['right_inflated'] = \
-            '%s/%s/t1/%s/surf/rh.inflated.gii' % (fs_db, subject, subject)
-        paths[subject]['left_spherical'] = \
-            '%s/%s/t1/%s/surf/lh.sphere.reg.gii' % (fs_db, subject, subject)
-        paths[subject]['right_spherical'] =\
-            '%s/%s/t1/%s/surf/rh.sphere.reg.gii' % (fs_db, subject, subject)
-        paths[subject]['reg_file'] = '%s/%s/t1/%s/mri/orig.mgz' % (
-            fs_db, subject, subject)
-        paths[subject]['fs_subj'] = subject
-        
-
-    return paths
-"""
-
 def init_config():
     """Initialize texture decoding experiement specific variables
 
-    Returns
+    Returns  
     =======
-    main_dir: string, directory containing texture decoding experiment mri data
+    data_path: string, directory containing texture decoding experiment mri data
+    main_dir: working place for data processing
     subjects_information: 
         dictionary, subject informations : subject id, session ids,
         session date, stimuli set (1 or 2)
     """
     # data repository
     data_path = '/neurospin/acquisition/database/Investigational_Device_7T/'
-
+    main_dir = '/neurospin/tmp/retino/7T/'
     subject_info = {
         'eb120536': {
             'folder': 'eb120536-934_001',
             'subject_id': 'eb120536',
+            'session_keys': ['ring_neg', 'ring_pos', 'wedge_pos', 'wedge_neg',
+                             'wedge_pos2'],
             'session_ids': {
                 't1': '000017_t1-mpr-tra-iso1.0mm',
                 'ring_neg': '000014_cmrr-mbep2d-iso1mm-p2-MB2-80sl-132rep',
@@ -99,6 +44,7 @@ def init_config():
         'gm110134':{
             'folder': 'gm110134-778_001',
             'subject_id': 'gm110134',
+            'session_keys': ['ring_neg', 'ring_pos', 'wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002_mprage-sag-T1-160sl',
                 'ring_pos': '000006_MoCoSeries',
@@ -111,6 +57,7 @@ def init_config():
         'jh100405':{
             'folder': 'jh100405-779_001',
             'subject_id': 'jh100405',
+            'session_keys': ['ring_neg', 'ring_pos', 'wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000002_mprage-sag-T1-160sl',
                 'ring_pos': '000012_MoCoSeries',
@@ -123,6 +70,7 @@ def init_config():
         'vr100551':{
             'folder': 'vr100551',
             'subject_id': 'vr100551-786_001',
+            'session_keys': ['ring_neg', 'ring_pos', 'wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
                 'ring_pos': '000009_MoCoSeries',
@@ -135,6 +83,7 @@ def init_config():
         'kr080082':{
             'folder': 'kr080082-787_001',
             'subject_id': 'kr080082',
+            'session_keys': ['ring_neg', 'ring_pos', 'wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
                 'ring_pos': '000007_MoCoSeries',
@@ -148,6 +97,7 @@ def init_config():
         'rj090242':{
             'folder': 'rj090242-790_001',
             'subject_id': 'rj090242',
+            'session_keys': ['ring_neg', 'ring_pos', 'wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
                 'ring_pos': '000007_MoCoSeries',
@@ -160,6 +110,7 @@ def init_config():
         'td110140':{
             'folder': 'td110140-791_001',
             'subject_id': 'td110140',
+            'session_keys': ['ring_neg', 'ring_pos', 'wedge_pos', 'wedge_neg'],
             'session_ids': {
                 't1': '000003_mprage-sag-T1-160sl',
                 'ring_pos': '000011_MoCoSeries',
@@ -171,7 +122,7 @@ def init_config():
             'protocol': 'ring + wedge',
             'scanner': '7T'},
         }    
-    return data_path, subject_info
+    return data_path, main_dir, subject_info
 
 if __name__ == 'main':
     make_paths()

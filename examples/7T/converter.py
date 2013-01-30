@@ -8,7 +8,7 @@ import commands
 import os
 import config_retino_7T
 
-data_path, subject_info = config_retino_7T.init_config()
+_, data_path, subject_info = config_retino_7T.init_config()
  
 subjects = subject_info.keys()
 
