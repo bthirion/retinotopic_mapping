@@ -20,6 +20,8 @@ list_mesh = [ 'rh.pial', 'lh.pial', 'rh.white', 'lh.white', 'rh.inflated',
 list_tex = ['rh.curv', 'lh.curv', 'lh.avg_curv', 'rh.avg_curv']
 
 for subject in subjects:
+    if subject == 'gm110134': 
+        continue
     # get the common directory of all the stuff
     surf_path = os.path.join(main_dir, subject, 't1', subject, 'surf')
 

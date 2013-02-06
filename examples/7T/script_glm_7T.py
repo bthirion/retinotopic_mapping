@@ -37,7 +37,7 @@ subjects = subject_info.keys()
 result_dir = 'analysis'
 
 # choose volume-based or surface-based analysis
-sides = [False]  #['left', 'right']#
+sides = ['left', 'right'] # [False] #
 # False: volume-based analysis
 # left: left hemisphere
 # right: right hemisphere
@@ -97,9 +97,14 @@ def make_contrasts(sessions, n_reg=7):
     contrasts['cos_ring_neg'][ring_neg] = np.eye(n_reg)[1]
     return contrasts, con_ids
 
+_, all_reg = make_contrasts(['ring_pos', 'ring_neg', 'wedge_pos', 'wedge_neg'])
+
 
 # Treat sequentially all subjects & acquisitions
 for subject in subjects:
+    sessions = ['ring_pos', 'ring_neg', 'wedge_pos', 'wedge_neg']
+    if subject == 'gm110134':
+        continue
     for side in sides:
         print("Subject: %s, side: %s" % (subject, side))
         #if subject == 'rj090242':
@@ -112,17 +117,17 @@ for subject in subjects:
         if not os.path.exists(write_dir):
             os.mkdir(write_dir)
 
-        # image path
-        sessions = ['ring_pos', 'ring_neg', 'wedge_pos', 'wedge_neg']
-        wild_card = 'rt*.nii'
-        if side == 'left':
-            wild_card = 'r*lh_.gii'
-        elif side == 'right':
-            wild_card = 'r*rh_.gii'
-
         # get the images
         fmri_series = [os.path.join(fmri_dir, '%s_series_%s.nii' %
                                     (subject, session)) for session in sessions]
+        if side == 'left':
+            fmri_series = [
+                os.path.join(fmri_dir, '%s_series_%s_lh_smooth5.gii' %
+                             (subject, session)) for session in sessions]
+        elif side == 'right':
+            fmri_series = [
+                os.path.join(fmri_dir, '%s_series_%s_rh_smooth5.gii' %
+                             (subject, session)) for session in sessions]
 
         # compute the mask
         if side == False:
@@ -163,7 +168,7 @@ for subject in subjects:
                 Y = Y[:, mask_array]
 
             # fit the glm
-            print 'Fitting a GLM (this takes time)...'
+            print 'Fitting a GLM'
             result = GeneralLinearModel(design_matrix.matrix)
             result.fit(Y, model='ar1', steps=100)
 
@@ -207,10 +212,8 @@ for subject in subjects:
 # Retinotopy specific analysis: phase maps
 #--------------------------------------------------------------------
 
-for subject in subjects:
+for subject in subjects:  
     print ('Computing phase maps in subject %s' % subject)
-    if side != False and subject == 'rj090242':
-        continue # missing data for this subject
     contrast_path = os.path.join(main_dir, subject, 'fmri', result_dir)
     mesh_path = None
     # offset_wedge and offset_ring are related to the encoding
@@ -223,7 +226,10 @@ for subject in subjects:
     size_threshold = 50
     for side in sides:
         if side is not False:
-            mesh_path = config_retino_7T.make_paths()[subject]['%s_mesh' % side]
+            if subject == 'gm110134':
+                continue
+            mesh_path = os.path.join(main_dir, subject, 't1', subject,
+                                     'surf/%sh.white.gii' % side[0])
 
         # threshold of the main effects map, in z-value
         angular_maps(
