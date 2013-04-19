@@ -18,7 +18,7 @@ import config_retino_7T
 _, main_dir, subject_info = config_retino_7T.init_config()
 
 sides = ['left', 'right']
-for subject in subject_info.keys():
+for subject in ['eb120536']:#subject_info.keys():
     if subject == 'gm110134':
         continue # this one does not work
     print subject

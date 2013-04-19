@@ -453,7 +453,8 @@ def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
 def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG, 
                  threshold=3.1, size_threshold=10,
                  offset_wedge=0, offset_ring=0, smooth=0, 
-                 do_wedge=True, do_ring=True, do_phase_unwrapping=False):
+                 do_wedge=True, do_ring=True, do_phase_unwrapping=False,
+                 do_delineate=True):
     """
     Parameters
     ----------
@@ -497,7 +498,7 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
         if op.exists(const_map):
             const = load_texture(const_map)
         else:
-            const = 0
+            const = 1
         mesh = mesh_path
         stat_map = op.join(contrast_path, 
                            '%s_effects_of_interest_z_map.gii' % side)
@@ -509,7 +510,7 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
                 mesh, stat_map, smooth_stat_map, smooth)
         else:
             stat_map = load_texture(stat_map)
-        mask = (np.ravel(stat_map) > threshold) * (np.isnan(const) == 0)
+        mask = (np.ravel(stat_map) > threshold)  # * (np.isnan(const) == 0)
         mask = cc_mesh_mask(mesh, mask, size_threshold).ravel()
 
         data = {}
@@ -526,13 +527,14 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
     phase_wedge, phase_ring, hemo = phase_maps(
         data, offset_ring, offset_wedge, do_wedge, do_ring, 
         do_phase_unwrapping, mesh=mesh, mask=mask)
-
+    
     # delineate the visual areas
-    if side != False:
+    if side is False:
+        do_delineate = False
+    if do_delineate:
         planar_coord = mep.isomap_patch(mesh, mask)
         visual_areas = delineate_areas(phase_ring, phase_wedge,  hemo, mesh, 
                                        mask, planar_coord, side)
-  
     # write the results
     data_, id_ = [hemo, mask[mask > 0]], ['hemo', 'mask']
     if do_ring:
@@ -541,7 +543,8 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
     if do_wedge:
         data_.append(phase_wedge)
         id_.append('phase_wedge')
-    if side != False:
+
+    if do_delineate:
         data_.append(visual_areas)
         id_.append('visual_areas')
         
