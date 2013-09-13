@@ -19,7 +19,7 @@ list_mesh = [ 'rh.pial', 'lh.pial', 'rh.white', 'lh.white', 'rh.inflated',
               'lh.inflated', 'lh.sphere.reg', 'rh.sphere.reg']
 list_tex = ['rh.curv', 'lh.curv', 'lh.avg_curv', 'rh.avg_curv']
 
-for subject in ['dummy']:#subjects:
+for subject in ['dummy_1mm']:#subjects:
     if subject == 'gm110134': 
         continue
     # get the common directory of all the stuff

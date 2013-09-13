@@ -2,7 +2,10 @@
 Script to perform angular operations on brain activation maps.
 This assumes that the standard file layout defined in nipy has been enforced.
 
-Author: Bertrand Thirion, 2010-2011
+Author: Bertrand Thirion, 2010-2013
+
+Note: it is advised to launch after setting 
+export SUBJECTS_DIR=''
 """
 
 import numpy as np
@@ -313,7 +316,7 @@ def find_fovea(mesh, side, mask, xy):
     binary_texture = REF_LEFT if side == 'left' else REF_RIGHT
     binary_texture_path =  '/tmp/fovea.gii'
     save_texture(binary_texture_path, binary_texture, intent='none')
-    subject_path = op.join(op.dirname(mesh), '/..')
+    subject_path = op.join(op.dirname(mesh), '..')
 
     # resample from the average to the individual space
     resampled = resample_from_average(binary_texture_path, subject_path,
@@ -329,7 +332,7 @@ def find_fovea(mesh, side, mask, xy):
     return fovea
 
 
-def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
+def retino_template(xy, ring, wedge, mesh, mask_, verbose=False, side='left'):
     """"""
     if ring is None:
         center = find_fovea(mesh, side, mask_, xy)
@@ -394,34 +397,6 @@ def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
                 visual_maps = maps
                 best_mask = mask
                 best_corr = np.corrcoef(wedge[mask], polar[mask])[0, 1]
-    
-    """
-    # finer search
-    for scale in [0.6, 0.8, 1.]:
-        for theta in np.linspace(best_theta - .5, best_theta + .5, 21):
-            angle_ = angle + theta
-            angle_[angle_ > np.pi] -= 2 * np.pi
-            angle_[angle_ > np.pi] -= 2 * np.pi
-            angle_[angle_ < - np.pi] += 2 * np.pi
-            mask, polar, maps = retino_polar(angle_, ecc, radius, scale)
-            if mask.sum() == 0:
-                continue
-            if side == 'left':
-                polar -= np.pi / 2
-            else:
-                polar += np.pi / 2
-            weight = mask * (polar > vmin) * (polar < vmax)
-            score =  1. - np.sum(
-                weight[mask] * (wedge[mask] - polar[mask]) ** 2) / np.sum(
-                weight[mask] * (wedge[mask]) ** 2)
-            if score > best_score:
-                best_score = score
-                best_polar = polar
-                best_theta = theta
-                visual_maps = maps
-                best_mask = mask
-                best_corr = np.corrcoef(wedge[mask], polar[mask])[0, 1]
-    """
 
     if verbose:
         print best_theta, best_corr    
