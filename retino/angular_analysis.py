@@ -12,10 +12,7 @@ from nipy.labs.spatial_models.discrete_domain import \
      grid_domain_from_binary_array
 from nipy.algorithms.graph import wgraph_from_coo_matrix
 
-try:
-    from parietal.surface_operations import mesh_processing as mep
-except:
-    import mesh_processing as  mep
+import mesh_processing as  mep
 
 NEGINF = -np.inf
 ALL_REG = ['sin_ring_pos', 'cos_ring_pos', 'sin_ring_neg',  'cos_ring_neg',

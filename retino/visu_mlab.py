@@ -6,13 +6,12 @@ Author: Virgile Fritsch, Bertrand Thirion 2010-2011
 """
 
 import numpy as np
-
-import enthought.mayavi.mlab as mlab
-
 try:
-    from parietal.surface_operations.mesh_processing import mesh_arrays
+    import enthought.mayavi.mlab as mlab
 except:
-    from mesh_processing import mesh_arrays
+    import mayavi.mlab as mlab
+
+from mesh_processing import mesh_arrays
 
 
 def plot_retino_image(mesh_path, name, tf=None, tex=None, curv=None, mask=None,
