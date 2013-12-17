@@ -2,7 +2,10 @@
 Script to perform angular operations on brain activation maps.
 This assumes that the standard file layout defined in nipy has been enforced.
 
-Author: Bertrand Thirion, 2010-2011
+Author: Bertrand Thirion, 2010-2013
+
+Note: it is advised to launch after setting 
+export SUBJECTS_DIR=''
 """
 
 import numpy as np
@@ -310,7 +313,7 @@ def find_fovea(mesh, side, mask, xy):
     binary_texture = REF_LEFT if side == 'left' else REF_RIGHT
     binary_texture_path =  '/tmp/fovea.gii'
     save_texture(binary_texture_path, binary_texture, intent='none')
-    subject_path = op.join(op.dirname(mesh), '/..')
+    subject_path = op.join(op.dirname(mesh), '..')
 
     # resample from the average to the individual space
     resampled = resample_from_average(binary_texture_path, subject_path,
@@ -326,7 +329,7 @@ def find_fovea(mesh, side, mask, xy):
     return fovea
 
 
-def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
+def retino_template(xy, ring, wedge, mesh, mask_, verbose=False, side='left'):
     """"""
     if ring is None:
         center = find_fovea(mesh, side, mask_, xy)
@@ -391,34 +394,6 @@ def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
                 visual_maps = maps
                 best_mask = mask
                 best_corr = np.corrcoef(wedge[mask], polar[mask])[0, 1]
-    
-    """
-    # finer search
-    for scale in [0.6, 0.8, 1.]:
-        for theta in np.linspace(best_theta - .5, best_theta + .5, 21):
-            angle_ = angle + theta
-            angle_[angle_ > np.pi] -= 2 * np.pi
-            angle_[angle_ > np.pi] -= 2 * np.pi
-            angle_[angle_ < - np.pi] += 2 * np.pi
-            mask, polar, maps = retino_polar(angle_, ecc, radius, scale)
-            if mask.sum() == 0:
-                continue
-            if side == 'left':
-                polar -= np.pi / 2
-            else:
-                polar += np.pi / 2
-            weight = mask * (polar > vmin) * (polar < vmax)
-            score =  1. - np.sum(
-                weight[mask] * (wedge[mask] - polar[mask]) ** 2) / np.sum(
-                weight[mask] * (wedge[mask]) ** 2)
-            if score > best_score:
-                best_score = score
-                best_polar = polar
-                best_theta = theta
-                visual_maps = maps
-                best_mask = mask
-                best_corr = np.corrcoef(wedge[mask], polar[mask])[0, 1]
-    """
 
     if verbose:
         print best_theta, best_corr    
@@ -450,7 +425,8 @@ def retino_template(xy, ring, wedge, mesh, mask_, verbose=True, side='left'):
 def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG, 
                  threshold=3.1, size_threshold=10,
                  offset_wedge=0, offset_ring=0, smooth=0, 
-                 do_wedge=True, do_ring=True, do_phase_unwrapping=False):
+                 do_wedge=True, do_ring=True, do_phase_unwrapping=False,
+                 do_delineate=True):
     """
     Parameters
     ----------
@@ -494,7 +470,7 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
         if op.exists(const_map):
             const = load_texture(const_map)
         else:
-            const = 0
+            const = 1
         mesh = mesh_path
         stat_map = op.join(contrast_path, 
                            '%s_effects_of_interest_z_map.gii' % side)
@@ -506,7 +482,7 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
                 mesh, stat_map, smooth_stat_map, smooth)
         else:
             stat_map = load_texture(stat_map)
-        mask = (np.ravel(stat_map) > threshold) * (np.isnan(const) == 0)
+        mask = (np.ravel(stat_map) > threshold)  # * (np.isnan(const) == 0)
         mask = cc_mesh_mask(mesh, mask, size_threshold).ravel()
 
         data = {}
@@ -523,13 +499,14 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
     phase_wedge, phase_ring, hemo = phase_maps(
         data, offset_ring, offset_wedge, do_wedge, do_ring, 
         do_phase_unwrapping, mesh=mesh, mask=mask)
-
+    
     # delineate the visual areas
-    if side != False:
+    if side is False:
+        do_delineate = False
+    if do_delineate:
         planar_coord = mep.isomap_patch(mesh, mask)
         visual_areas = delineate_areas(phase_ring, phase_wedge,  hemo, mesh, 
                                        mask, planar_coord, side)
-  
     # write the results
     data_, id_ = [hemo, mask[mask > 0]], ['hemo', 'mask']
     if do_ring:
@@ -538,7 +515,8 @@ def angular_maps(side, contrast_path, mesh_path=None, all_reg=ALL_REG,
     if do_wedge:
         data_.append(phase_wedge)
         id_.append('phase_wedge')
-    if side != False:
+
+    if do_delineate:
         data_.append(visual_areas)
         id_.append('visual_areas')
         

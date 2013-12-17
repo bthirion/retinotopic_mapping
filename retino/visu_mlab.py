@@ -40,7 +40,7 @@ def plot_retino_image(mesh_path, name, tf=None, tex=None, curv=None, mask=None,
     vertices = af_coord[:, :3]
     x, y, z = vertices.T
 
-    # it is sexpected that the curvature takes values between 0 and 1
+    # it is expected that the curvature takes values between 0 and 1
     if curv is not None:
         cmin = 2 * curv.min() - curv.max()
         cmax = 2 * curv.max() - curv.min()
@@ -53,7 +53,7 @@ def plot_retino_image(mesh_path, name, tf=None, tex=None, curv=None, mask=None,
     if tex is not None:
         if mask is not None:
             tex[mask == 0] = vmin - 1
-            print np.sum(tex < vmin)
+
         func_mesh = mlab.pipeline.triangular_mesh_source(x, y, z,
                                                   triangles,
                                                   scalars=tex)

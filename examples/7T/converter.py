@@ -6,11 +6,11 @@ Author: Bertrand Thirion, 2012
 """
 import commands
 import os
-import config_retino_7T
+#import config_retino_7T
 
-_, data_path, subject_info = config_retino_7T.init_config()
+#_, data_path, subject_info = config_retino_7T.init_config()
  
-subjects = subject_info.keys()
+#subjects = subject_info.keys()
 
 # data directory
 main_dir = '/neurospin/tmp/retino/7T/'
@@ -19,7 +19,9 @@ list_mesh = [ 'rh.pial', 'lh.pial', 'rh.white', 'lh.white', 'rh.inflated',
               'lh.inflated', 'lh.sphere.reg', 'rh.sphere.reg']
 list_tex = ['rh.curv', 'lh.curv', 'lh.avg_curv', 'rh.avg_curv']
 
-for subject in subjects:
+for subject in ['gf070080']:#subjects:
+    if subject == 'gm110134': 
+        continue
     # get the common directory of all the stuff
     surf_path = os.path.join(main_dir, subject, 't1', subject, 'surf')
 

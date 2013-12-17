@@ -43,7 +43,7 @@ if not os.path.exists(main_dir):
 # parameters
 TR = 2.4
 
-for subject in ['td110140', 'jh100405']: # subject_info.keys(): #
+for subject in ['eb120536']: #['td110140', 'jh100405']: # subject_info.keys(): #
     subject_dict = subject_info[subject]
 
     # the next part is automatic, possibly neurospin-specific
@@ -69,7 +69,7 @@ for subject in ['td110140', 'jh100405']: # subject_info.keys(): #
     ##############################################################
     # Get the archive and convert the data using MRIcron
     ##############################################################
-    """
+
     for (session_id, session_index) in subject_dict['session_ids'].items():
         # fetch the data
         archive = glob.glob(os.path.join(
@@ -108,7 +108,7 @@ for subject in ['td110140', 'jh100405']: # subject_info.keys(): #
         for x in glob.glob(os.path.join(dicom_dir, '*')):
             os.remove(x)
         os.removedirs(dicom_dir)
-    """
+
     ##############################################################
     # Preprocessing
     ##############################################################
@@ -117,10 +117,9 @@ for subject in ['td110140', 'jh100405']: # subject_info.keys(): #
 
     ##############################################################
     # Anatomical segmentation (White/Grey matter)
-    """
+
     seg = mem.cache(spm.Segment)
-    if subject == 'eb120536':
-        anat_image = os.path.join(t1_dir, 'ratio.nii')
+    
     out_seg = seg(data=anat_image,
                   gm_output_type=[True, True, True],
                   wm_output_type=[True, True, True],
@@ -198,7 +197,7 @@ for subject in ['td110140', 'jh100405']: # subject_info.keys(): #
     # does the coregistration of the time corrected+realigned fmri series
     coreg_result = coreg(target=mean_image, source=anat_image,
                          jobtype='estimate')
-    """
+    
     ##############################################################
     # Run freesurfer segmentation
     nobias = os.path.join(t1_dir, '%s_nobias.nii' % subject)
